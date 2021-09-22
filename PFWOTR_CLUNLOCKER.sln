@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31702.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PFWOTRCLUNLOCKER", "PFWOTRCLUNLOCKER\PFWOTRCLUNLOCKER.csproj", "{CA738F50-E04A-4F99-8C83-6B647D010D31}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CA738F50-E04A-4F99-8C83-6B647D010D31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA738F50-E04A-4F99-8C83-6B647D010D31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA738F50-E04A-4F99-8C83-6B647D010D31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA738F50-E04A-4F99-8C83-6B647D010D31}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1B9030EA-69DC-46F8-A512-74B70D165090}
+	EndGlobalSection
+EndGlobal
