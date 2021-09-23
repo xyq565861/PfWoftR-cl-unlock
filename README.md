@@ -14,7 +14,7 @@ This is a UnityModManager mod for Pathfinder: Wrath of The Righteous.
 
 
 How to install:
-    Download and install Unity Mod Manager, make sure it is at least version 0.23.0.
-    Run Unity Mod Manager and set it up to find Wrath of the Righteous.
-    Download the mod.
-    Install the mod by dragging the zip file from step 5 into the Unity Mod Manager window under the Mods tab
+    1.Download and install Unity Mod Manager, make sure it is at least version 0.23.0.
+    2.Run Unity Mod Manager and set it up to find Wrath of the Righteous.
+    3.Download the mod.
+    4.Install the mod by dragging the zip file into the Unity Mod Manager window under the Mods tab
