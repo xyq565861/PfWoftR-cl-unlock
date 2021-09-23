@@ -40,6 +40,7 @@
     <Reference Include="dnlib">
       <HintPath>F:\pf\Pathfinder Wrath of the Righteous\Wrath_Data\Managed\UnityModManager\dnlib.dll</HintPath>
     </Reference>
+    <Reference Include="Owlcat.Runtime.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
