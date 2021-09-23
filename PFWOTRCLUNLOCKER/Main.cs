@@ -126,7 +126,12 @@ namespace PFWOTRCLUNLOCKER
                 {
                     i = 18;
                 }
-                i = 19;
+                else
+                {
+                    i = 19;
+
+                }
+
             }
             level = i;
             return true;
@@ -176,12 +181,12 @@ namespace PFWOTRCLUNLOCKER
         [HarmonyPatch("MeetsPrerequisites")]
         public static void Postfix(ref UnitDescriptor unit, BlueprintCharacterClass __instance, ref bool __result)
         {
-            
-            Main.Logger.Log(__result.ToString());
+
+
             if (!__result)
             {
                 int classLevel = unit.Progression.GetClassLevel(__instance);
-                Main.Logger.Log(classLevel.ToString());
+
                 if (classLevel >= 20 && classLevel < 40)
                 {
                     __result = true;
@@ -191,7 +196,7 @@ namespace PFWOTRCLUNLOCKER
                     __result = true;
                 }
             }
-            Main.Logger.Log(__result.ToString());
+
 
         }
     }
@@ -212,7 +217,11 @@ namespace PFWOTRCLUNLOCKER
                 {
                     i = 18;
                 }
-                i = 19;
+                else
+                {
+                    i = 19;
+
+                }
             }
             level = i;
             __result = __instance.LevelEntries.FirstOrDefault((LevelEntry le) => le.Level == level) ?? new LevelEntry(); ;
