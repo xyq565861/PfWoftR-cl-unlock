@@ -8,11 +8,13 @@ This is a UnityModManager mod for Pathfinder: Wrath of The Righteous.
 
 2.To unlock the upper limit of level 20 of the original and synchronize class level to caster level.
 
-This is a test version now, so if you encounter a bug, please let me know.
-https://github.com/xyq565861/PfWoftR-cl-unlock
 
-How to install
-Download and install Unity Mod Manager, make sure it is at least version 0.23.0
-Run Unity Mod Manager and set it up to find Wrath of the Righteous
-Download the Scaling Cantrips mod
-Install the mod by dragging the zip file from step 5 into the Unity Mod Manager window under the Mods tab
+    This is a test version now, so if you encounter a bug, please let me know.
+    https://github.com/xyq565861/PfWoftR-cl-unlock
+
+
+How to install:
+    Download and install Unity Mod Manager, make sure it is at least version 0.23.0.
+    Run Unity Mod Manager and set it up to find Wrath of the Righteous.
+    Download the mod.
+    Install the mod by dragging the zip file from step 5 into the Unity Mod Manager window under the Mods tab
