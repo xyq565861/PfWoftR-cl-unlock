@@ -19,8 +19,13 @@ namespace PFWOTRCLUNLOCKER
 
     public class Settings : UnityModManager.ModSettings
     {
-        public bool unLockCasterLevel = false;
-        public bool unLockClassLevel = false;
+        public bool unLockCasterLevel = true;
+        public bool unLockClassLevel = true;
+        public bool unLockCharacterLevel = true;
+        public bool changeProtagonistXpTable = true;
+        public bool changeStoryCompanionXpTable = true;
+        public bool changeCustomCompanionXpTable = true;
+        public int normalXpTableDifferenceAfter20 = 100000;
 
         public override void Save(UnityModManager.ModEntry modEntry)
         {
@@ -33,6 +38,7 @@ namespace PFWOTRCLUNLOCKER
 
     public static class Main
     {
+
         public static bool enabled;
         public static Settings settings;
         public static UnityModManager.ModEntry.ModLogger Logger;
@@ -61,7 +67,24 @@ namespace PFWOTRCLUNLOCKER
             {
                 return;
             }
-           (new GUILayoutOption[1])[0] = GUILayout.ExpandWidth(false);
+            GUILayoutOption[] options = new GUILayoutOption[]
+            {
+                GUILayout.ExpandWidth(true),
+                GUILayout.MaxWidth(1000f)
+            };
+            Main.settings.unLockCasterLevel = GUILayout.Toggle(Main.settings.unLockCasterLevel, "To unlock the upper limit of 20 CL from one class and synchronize class level to caster level.", options);
+            Main.settings.unLockClassLevel = GUILayout.Toggle(Main.settings.unLockClassLevel, "To unlock the upper limit of every class level to 40.", options);
+            Main.settings.unLockCharacterLevel = GUILayout.Toggle(Main.settings.unLockCharacterLevel, "To unlock the upper limit of character level to 40.", options);
+            Main.settings.changeProtagonistXpTable = GUILayout.Toggle(Main.settings.changeProtagonistXpTable, "Switch  your Protagonist level up curve to the legendary character xp table.", options);
+            Main.settings.changeStoryCompanionXpTable = GUILayout.Toggle(Main.settings.changeStoryCompanionXpTable, "Switch  your StoryCompanion level up curve to the legendary character xp table.", options);
+            Main.settings.changeCustomCompanionXpTable = GUILayout.Toggle(Main.settings.changeCustomCompanionXpTable, "Switch  your CustomCompanion level up curve to the legendary character xp table.", options);
+            GUILayout.Label("Increment of level experience difference after level 20 without conversion to legend XP table", options);
+            var maxBackupsToKeep = GUILayout.TextField(settings.normalXpTableDifferenceAfter20.ToString(), 6);
+            if (GUI.changed && !int.TryParse(maxBackupsToKeep, out settings.normalXpTableDifferenceAfter20))
+            {
+                settings.normalXpTableDifferenceAfter20 = 100000;
+            }
+            //(new GUILayoutOption[1])[0] = GUILayout.ExpandWidth(false);
         }
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
@@ -85,8 +108,13 @@ namespace PFWOTRCLUNLOCKER
     {
         public static bool Prefix(Spellbook __instance, ref int ___m_BaseLevelInternal, ref int __result)
         {
-            __result = Math.Max(0, ___m_BaseLevelInternal + __instance.Blueprint.CasterLevelModifier);
-            return false;
+
+            if (Main.settings.unLockCasterLevel)
+            {
+                __result = Math.Max(0, ___m_BaseLevelInternal + __instance.Blueprint.CasterLevelModifier);
+                return false;
+            }
+            return true;
         }
 
     }
@@ -96,17 +124,53 @@ namespace PFWOTRCLUNLOCKER
     public static class UnitProgressionData_Patch
     {
         [HarmonyPatch("ExperienceTable", MethodType.Getter)]
-        public static void Postfix(ref BlueprintStatProgression __result)
+        [HarmonyPriority(Priority.VeryLow)]
+        public static void Postfix(UnitProgressionData __instance, ref BlueprintStatProgression __result)
         {
-            __result = Game.Instance.BlueprintRoot.Progression.XPTable; ;
+            if (Main.settings.changeProtagonistXpTable)
+            {
+                if (__instance.Owner.IsMainCharacter || __instance.Owner.Unit.IsCloneOfMainCharacter)
+                {
+                    __result = Game.Instance.BlueprintRoot.Progression.LegendXPTable.Or(null) ?? Game.Instance.BlueprintRoot.Progression.XPTable;
+                }
+            }
+            if (Main.settings.changeStoryCompanionXpTable)
+            {
+                if (__instance.Owner.Unit.IsStoryCompanion())
+                {
+                    __result = Game.Instance.BlueprintRoot.Progression.LegendXPTable.Or(null) ?? Game.Instance.BlueprintRoot.Progression.XPTable;
+                }
+            }
+            if (Main.settings.changeCustomCompanionXpTable)
+            {
+                if (__instance.Owner.Unit.IsCustomCompanion())
+                {
+                    __result = Game.Instance.BlueprintRoot.Progression.LegendXPTable.Or(null) ?? Game.Instance.BlueprintRoot.Progression.XPTable;
+                }
+            }
+            Main.Logger.Log(__instance.Owner.CharacterName);
+            Main.Logger.Log("IsMainCharacter:" + __instance.Owner.IsMainCharacter.ToString());
+            Main.Logger.Log("IsPet:" + __instance.Owner.Unit.IsPet.ToString());
+            Main.Logger.Log("IsStoryCompanion:" + __instance.Owner.Unit.IsStoryCompanion().ToString());
+            Main.Logger.Log("IsCloneOfMainCharacter:" + __instance.Owner.Unit.IsCloneOfMainCharacter.ToString());
+            Main.Logger.Log("IsCustomCompanion:" + __instance.Owner.Unit.IsCustomCompanion().ToString());
+            Main.Logger.Log("CharacterLevel:" + __instance.CharacterLevel);
+            Main.Logger.Log("Experience:" + __instance.Experience);
+            Main.Logger.Log("normal:" + Game.Instance.BlueprintRoot.Progression.XPTable.GetBonus(__instance.CharacterLevel + 1));
+            Main.Logger.Log("Legend:" + Game.Instance.BlueprintRoot.Progression.LegendXPTable.GetBonus(__instance.CharacterLevel + 1));
+            Main.Logger.Log("__result:" + __result.GetBonus(__instance.CharacterLevel + 1));
+
+
+
         }
 
         [HarmonyPatch("MaxCharacterLevel", MethodType.Getter)]
         public static void Postfix(ref int __result)
         {
-
-            __result = 40;
-
+            if (Main.settings.unLockCharacterLevel)
+            {
+                __result = 40;
+            }
         }
     }
 
@@ -115,25 +179,28 @@ namespace PFWOTRCLUNLOCKER
     {
         private static bool Prefix(ref int level)
         {
-            int i = level;
-            if (i >= 40)
+            if (Main.settings.unLockCharacterLevel || Main.settings.unLockClassLevel)
             {
-                i = 20;
-            }
-            if (level > 20)
-            {
-                if (i % 2 == 0)
+                int i = level;
+                if (i >= 40)
                 {
-                    i = 18;
+                    i = 20;
                 }
-                else
+                if (level > 20)
                 {
-                    i = 19;
+                    if (i % 2 == 0)
+                    {
+                        i = 18;
+                    }
+                    else
+                    {
+                        i = 19;
+
+                    }
 
                 }
-
+                level = i;
             }
-            level = i;
             return true;
 
         }
@@ -145,34 +212,39 @@ namespace PFWOTRCLUNLOCKER
         public static void Postfix(ref BlueprintStatProgressionReference ___m_XPTable, ref BlueprintStatProgression __result, ProgressionRoot __instance)
         {
 
-
-            BlueprintStatProgression m_StatProgression = new BlueprintStatProgression();
-
-            BlueprintStatProgressionReference xptable = ___m_XPTable;
-            if (xptable == null)
+            if (Main.settings.unLockCharacterLevel)
             {
-                __result = null;
-            }
-            BlueprintStatProgression blueprintStatProgression = xptable.Get();
-            if (41 > blueprintStatProgression.Bonuses.Length)
-            {
-                int[] array = new int[41];
-                for (int i = 1; i < 20; i++)
+                int diff= Main.settings.normalXpTableDifferenceAfter20;
+                BlueprintStatProgression m_StatProgression = new BlueprintStatProgression();
+
+                BlueprintStatProgressionReference xptable = ___m_XPTable;
+                if (xptable == null)
                 {
-                    int num = i * 2;
-                    array[num - 1] = blueprintStatProgression.Bonuses[i];
-                    array[num] = (blueprintStatProgression.Bonuses[i] + blueprintStatProgression.Bonuses[i + 1]) / 2;
+                    __result = null;
                 }
-                array[39] = (array[38] + blueprintStatProgression.Bonuses[20]) / 2;
-                array[40] = blueprintStatProgression.Bonuses[20];
-                m_StatProgression.Bonuses = array;
-            }
-            if (m_StatProgression.Bonuses.Length == 0)
-            {
-                m_StatProgression.Bonuses = blueprintStatProgression.Bonuses;
-            }
-            __result = m_StatProgression;
+                BlueprintStatProgression blueprintStatProgression = xptable.Get();
+                if (41 > blueprintStatProgression.Bonuses.Length)
+                {
+                    int[] array = new int[41];
+                    for (int i = 0; i < 21; i++)
+                    {
+                        array[i] = blueprintStatProgression.Bonuses[i];
+                    }
+                    int num = array[20] - array[19];
+                    for (int i = 21; i < 41; i++)
+                    {
+                        array[i] = array[i-1] + num;
+                        num = num + diff;
+                    }
 
+                    m_StatProgression.Bonuses = array;
+                }
+                if (m_StatProgression.Bonuses.Length == 0)
+                {
+                    m_StatProgression.Bonuses = blueprintStatProgression.Bonuses;
+                }
+                __result = m_StatProgression;
+            }
         }
     }
     [HarmonyPatch(typeof(BlueprintCharacterClass))]
@@ -182,22 +254,23 @@ namespace PFWOTRCLUNLOCKER
         public static void Postfix(ref UnitDescriptor unit, BlueprintCharacterClass __instance, ref bool __result)
         {
 
-
-            if (!__result)
+            if (Main.settings.unLockClassLevel)
             {
-                int classLevel = unit.Progression.GetClassLevel(__instance);
+                if (!__result)
+                {
+                    int classLevel = unit.Progression.GetClassLevel(__instance);
 
-                if (classLevel >= 20 && classLevel < 40)
-                {
-                    __result = true;
+                    if (classLevel >= 20 && classLevel < 40)
+                    {
+                        __result = true;
+                    }
+                    if (__instance.PrestigeClass && classLevel < 40 && classLevel >= 10)
+                    {
+                        __result = true;
+                    }
                 }
-                if (__instance.PrestigeClass && classLevel < 40 && classLevel >= 10)
-                {
-                    __result = true;
-                }
+
             }
-
-
         }
     }
 
@@ -206,26 +279,30 @@ namespace PFWOTRCLUNLOCKER
     {
         public static bool Prefix(ProgressionData __instance, int level, ref LevelEntry __result)
         {
-            int i = level;
-            if (i >= 40)
+            if (Main.settings.unLockCharacterLevel || Main.settings.unLockClassLevel)
             {
-                i = 20;
-            }
-            if (i > 20)
-            {
-                if (i % 2 == 0)
+                int i = level;
+                if (i >= 40)
                 {
-                    i = 18;
+                    i = 20;
                 }
-                else
+                if (i > 20)
                 {
-                    i = 19;
+                    if (i % 2 == 0)
+                    {
+                        i = 18;
+                    }
+                    else
+                    {
+                        i = 19;
 
+                    }
                 }
+                level = i;
+                __result = __instance.LevelEntries.FirstOrDefault((LevelEntry le) => le.Level == level) ?? new LevelEntry(); ;
+                return false;
             }
-            level = i;
-            __result = __instance.LevelEntries.FirstOrDefault((LevelEntry le) => le.Level == level) ?? new LevelEntry(); ;
-            return false;
+            return true;
         }
 
 

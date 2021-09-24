@@ -198,4 +198,3 @@ F:\pf\mod object\clunlocker\PFWOTRCLUNLOCKER\obj\Debug\PFWOTRCLUNLOCKER.csproj.C
 F:\pf\mod object\clunlocker\PFWOTRCLUNLOCKER\obj\Debug\PFWOTRCLUNLOCKER.csproj.CopyComplete
 F:\pf\mod object\clunlocker\PFWOTRCLUNLOCKER\obj\Debug\PFWOTRCLUNLOCKER.dll
 F:\pf\mod object\clunlocker\PFWOTRCLUNLOCKER\obj\Debug\PFWOTRCLUNLOCKER.pdb
-F:\pf\mod object\clunlocker\PFWOTRCLUNLOCKER\obj\Debug\PFWOTRCLUNLOCKER.csproj.AssemblyReference.cache
