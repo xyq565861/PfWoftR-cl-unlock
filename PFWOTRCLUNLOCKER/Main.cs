@@ -104,8 +104,10 @@ namespace PFWOTRCLUNLOCKER
 
     }
     [HarmonyPatch(typeof(Spellbook), "BaseLevel", MethodType.Getter)]
+
     public static class Spellbook_BaseLevel_Getter_Patch
     {
+        [HarmonyPriority(Priority.High)]
         public static bool Prefix(Spellbook __instance, ref int ___m_BaseLevelInternal, ref int __result)
         {
 
@@ -121,10 +123,14 @@ namespace PFWOTRCLUNLOCKER
 
 
     [HarmonyPatch(typeof(UnitProgressionData))]
+    
     public static class UnitProgressionData_Patch
     {
         [HarmonyPatch("ExperienceTable", MethodType.Getter)]
-        [HarmonyPriority(Priority.VeryLow)]
+        [HarmonyAfter(new string[] { "ToyBox" })]
+        [HarmonyPriority(Priority.Last)]
+
+
         public static void Postfix(UnitProgressionData __instance, ref BlueprintStatProgression __result)
         {
             if (Main.settings.changeProtagonistXpTable)
@@ -148,23 +154,24 @@ namespace PFWOTRCLUNLOCKER
                     __result = Game.Instance.BlueprintRoot.Progression.LegendXPTable.Or(null) ?? Game.Instance.BlueprintRoot.Progression.XPTable;
                 }
             }
-            Main.Logger.Log(__instance.Owner.CharacterName);
-            Main.Logger.Log("IsMainCharacter:" + __instance.Owner.IsMainCharacter.ToString());
-            Main.Logger.Log("IsPet:" + __instance.Owner.Unit.IsPet.ToString());
-            Main.Logger.Log("IsStoryCompanion:" + __instance.Owner.Unit.IsStoryCompanion().ToString());
-            Main.Logger.Log("IsCloneOfMainCharacter:" + __instance.Owner.Unit.IsCloneOfMainCharacter.ToString());
-            Main.Logger.Log("IsCustomCompanion:" + __instance.Owner.Unit.IsCustomCompanion().ToString());
-            Main.Logger.Log("CharacterLevel:" + __instance.CharacterLevel);
-            Main.Logger.Log("Experience:" + __instance.Experience);
-            Main.Logger.Log("normal:" + Game.Instance.BlueprintRoot.Progression.XPTable.GetBonus(__instance.CharacterLevel + 1));
-            Main.Logger.Log("Legend:" + Game.Instance.BlueprintRoot.Progression.LegendXPTable.GetBonus(__instance.CharacterLevel + 1));
-            Main.Logger.Log("__result:" + __result.GetBonus(__instance.CharacterLevel + 1));
+            //Main.Logger.Log(__instance.Owner.CharacterName);
+            //Main.Logger.Log("IsMainCharacter:" + __instance.Owner.IsMainCharacter.ToString());
+            //Main.Logger.Log("IsPet:" + __instance.Owner.Unit.IsPet.ToString());
+            //Main.Logger.Log("IsStoryCompanion:" + __instance.Owner.Unit.IsStoryCompanion().ToString());
+            //Main.Logger.Log("IsCloneOfMainCharacter:" + __instance.Owner.Unit.IsCloneOfMainCharacter.ToString());
+            //Main.Logger.Log("IsCustomCompanion:" + __instance.Owner.Unit.IsCustomCompanion().ToString());
+            //Main.Logger.Log("CharacterLevel:" + __instance.CharacterLevel);
+            //Main.Logger.Log("Experience:" + __instance.Experience);
+            //Main.Logger.Log("normal:" + Game.Instance.BlueprintRoot.Progression.XPTable.GetBonus(__instance.CharacterLevel + 1));
+            //Main.Logger.Log("Legend:" + Game.Instance.BlueprintRoot.Progression.LegendXPTable.GetBonus(__instance.CharacterLevel + 1));
+            //Main.Logger.Log("__result:" + __result.GetBonus(__instance.CharacterLevel + 1));
 
 
 
         }
 
         [HarmonyPatch("MaxCharacterLevel", MethodType.Getter)]
+        [HarmonyPriority(Priority.Low)]
         public static void Postfix(ref int __result)
         {
             if (Main.settings.unLockCharacterLevel)
@@ -177,6 +184,7 @@ namespace PFWOTRCLUNLOCKER
     [HarmonyPatch(typeof(ApplyClassProgression), "ApplyProgressionLevel")]
     public static class ApplyClassProgression_Patch
     {
+        [HarmonyPriority(Priority.Low)]
         private static bool Prefix(ref int level)
         {
             if (Main.settings.unLockCharacterLevel || Main.settings.unLockClassLevel)
@@ -209,6 +217,7 @@ namespace PFWOTRCLUNLOCKER
     [HarmonyPatch(typeof(ProgressionRoot), "XPTable", MethodType.Getter)]
     public static class ProgressionRoot_XPTable_Patch
     {
+        [HarmonyPriority(Priority.Low)]
         public static void Postfix(ref BlueprintStatProgressionReference ___m_XPTable, ref BlueprintStatProgression __result, ProgressionRoot __instance)
         {
 
@@ -251,6 +260,7 @@ namespace PFWOTRCLUNLOCKER
     public static class BlueprintCharacterClass_Patch
     {
         [HarmonyPatch("MeetsPrerequisites")]
+        [HarmonyPriority(Priority.Low)]
         public static void Postfix(ref UnitDescriptor unit, BlueprintCharacterClass __instance, ref bool __result)
         {
 
@@ -277,6 +287,7 @@ namespace PFWOTRCLUNLOCKER
     [HarmonyPatch(typeof(ProgressionData), "GetLevelEntry")]
     public static class ProgressionData_Patch
     {
+        [HarmonyPriority(Priority.High)]
         public static bool Prefix(ProgressionData __instance, int level, ref LevelEntry __result)
         {
             if (Main.settings.unLockCharacterLevel || Main.settings.unLockClassLevel)
