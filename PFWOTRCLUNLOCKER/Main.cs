@@ -22,10 +22,11 @@ namespace PFWOTRCLUNLOCKER
         public bool unLockCasterLevel = true;
         public bool unLockClassLevel = true;
         public bool unLockCharacterLevel = true;
-        public bool changeProtagonistXpTable = true;
-        public bool changeStoryCompanionXpTable = true;
-        public bool changeCustomCompanionXpTable = true;
-        public int normalXpTableDifferenceAfter20 = 100000;
+        public bool changeProtagonistXpTable = false;
+        public bool changeStoryCompanionXpTable = false;
+        public bool changeCustomCompanionXpTable = false;
+        public int normalXpTableXpNeed20To21 = 1050000;
+        public int normalXpTableDifferenceIncreaseAfter20 = 100000;
 
         public override void Save(UnityModManager.ModEntry modEntry)
         {
@@ -78,12 +79,19 @@ namespace PFWOTRCLUNLOCKER
             Main.settings.changeProtagonistXpTable = GUILayout.Toggle(Main.settings.changeProtagonistXpTable, "Switch  your Protagonist level up curve to the legendary character xp table.", options);
             Main.settings.changeStoryCompanionXpTable = GUILayout.Toggle(Main.settings.changeStoryCompanionXpTable, "Switch  your StoryCompanion level up curve to the legendary character xp table.", options);
             Main.settings.changeCustomCompanionXpTable = GUILayout.Toggle(Main.settings.changeCustomCompanionXpTable, "Switch  your CustomCompanion level up curve to the legendary character xp table.", options);
-            GUILayout.Label("Increment of level experience difference after level 20 without conversion to legend XP table", options);
-            var maxBackupsToKeep = GUILayout.TextField(settings.normalXpTableDifferenceAfter20.ToString(), 6);
-            if (GUI.changed && !int.TryParse(maxBackupsToKeep, out settings.normalXpTableDifferenceAfter20))
+            GUILayout.Label("Base experience difference lv20 to lv21 without conversion to legend XP table", options);
+            var maxNXpBaseToKeep = GUILayout.TextField(settings.normalXpTableXpNeed20To21.ToString(), 7);
+            if (GUI.changed && !int.TryParse(maxNXpBaseToKeep, out settings.normalXpTableXpNeed20To21))
             {
-                settings.normalXpTableDifferenceAfter20 = 100000;
+                settings.normalXpTableXpNeed20To21 = 1050000;
             }
+            GUILayout.Label("Increment of level experience difference after level 20 without conversion to legend XP table", options);
+            var maxnNXpIncrementToKeep = GUILayout.TextField(settings.normalXpTableDifferenceIncreaseAfter20.ToString(), 6);
+            if (GUI.changed && !int.TryParse(maxnNXpIncrementToKeep, out settings.normalXpTableDifferenceIncreaseAfter20))
+            {
+                settings.normalXpTableDifferenceIncreaseAfter20 = 100000;
+            }
+
             //(new GUILayoutOption[1])[0] = GUILayout.ExpandWidth(false);
         }
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
@@ -222,10 +230,10 @@ namespace PFWOTRCLUNLOCKER
         {
 
             if (Main.settings.unLockCharacterLevel)
-            {
-                int diff= Main.settings.normalXpTableDifferenceAfter20;
+            {       
+                int base20To21 = Main.settings.normalXpTableXpNeed20To21;
+                int diff= Main.settings.normalXpTableDifferenceIncreaseAfter20;
                 BlueprintStatProgression m_StatProgression = new BlueprintStatProgression();
-
                 BlueprintStatProgressionReference xptable = ___m_XPTable;
                 if (xptable == null)
                 {
@@ -239,7 +247,8 @@ namespace PFWOTRCLUNLOCKER
                     {
                         array[i] = blueprintStatProgression.Bonuses[i];
                     }
-                    int num = array[20] - array[19];
+                    //int num = array[20] - array[19];
+                    int num = base20To21;                    
                     for (int i = 21; i < 41; i++)
                     {
                         array[i] = array[i-1] + num;
