@@ -105,6 +105,7 @@ namespace PFWOTRCLUNLOCKER
         }
 
 
+
         static void OnSaveGUI(UnityModManager.ModEntry modEntry)
         {
             settings.Save(modEntry);
@@ -178,6 +179,119 @@ namespace PFWOTRCLUNLOCKER
 
         }
 
+        [HarmonyPatch("AddClassLevel")]
+        [HarmonyPriority(Priority.High)]
+        public static bool Prefix(UnitProgressionData __instance, BlueprintCharacterClass characterClass,ref System.Collections.Generic.List<BlueprintCharacterClass> ___m_ClassesOrder,ref int? ___m_CharacterLevel)
+        {
+            if (!Main.settings.unLockCharacterLevel)
+            {
+                return true;
+                //{
+                //    if (!characterClass.IsMythic)
+                //    {
+                //        Main.Logger.Log(__instance.Owner.CharacterName+"T");
+                //        int num = __instance.CharacterLevel;
+                //        int[] bonuses = BlueprintRoot.Instance.Progression.XPTable.Bonuses;
+
+
+                //        int val = bonuses[Math.Min(bonuses.Length - 1, __instance.CharacterLevel)];
+                //        //var f = __instance;
+                //        var setter = typeof(UnitProgressionData).GetProperty("Experience");
+                //        var method = setter.GetSetMethod(true);
+                //        method.Invoke(__instance, new object[] { val});
+
+                //    }
+                //    __instance.Classes.Sort();
+                //    __instance.Features.AddFeature(characterClass.Progression, null).SetSource(characterClass, 1);
+                //    __instance.Owner.OnGainClassLevel(characterClass);
+                //    __instance.UpdateAdditionalVisualSettings();
+
+                //    Main.Logger.Log(__instance.Experience.ToString());
+
+            }
+            if (characterClass.IsHigherMythic)
+            {
+                return true;
+            }
+
+            if (__instance.ObligatoryMythicClassesQueue != null && characterClass.IsMythic)
+            {
+                return true;   
+            }
+            bool flage = true;
+            int[] bonuses = BlueprintRoot.Instance.Progression.XPTable.Bonuses;
+            if (Main.settings.changeProtagonistXpTable)
+            {
+                if (__instance.Owner.IsMainCharacter || __instance.Owner.Unit.IsCloneOfMainCharacter)
+                {
+                    bonuses =  BlueprintRoot.Instance.Progression.LegendXPTable.Bonuses;
+                    flage=false;
+                }
+            }
+            if (Main.settings.changeStoryCompanionXpTable)
+            {
+                if (__instance.Owner.Unit.IsStoryCompanion())
+                {
+                    bonuses =BlueprintRoot.Instance.Progression.LegendXPTable.Bonuses;
+                    flage=false;
+                }
+            }
+            if (Main.settings.changeCustomCompanionXpTable)
+            {
+                if (__instance.Owner.Unit.IsCustomCompanion())
+                {
+                    bonuses = BlueprintRoot.Instance.Progression.LegendXPTable.Bonuses;
+                    flage=false;
+                }
+            }
+            if (flage)
+            {
+                return true;
+            }
+            var sureClassData = typeof(UnitProgressionData).GetMethod("SureClassData", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+
+           
+            if (characterClass.IsMythic)
+            {
+                return true;
+            }
+            else
+            {
+                try
+                {
+                    var classDataV= sureClassData.Invoke(__instance, new object[] { characterClass });
+
+                    ClassData classData = (ClassData)classDataV;
+                    int num = classData.Level;
+                    classData.Level = num + 1;
+                    ___m_ClassesOrder.Add(characterClass);
+                    num = __instance.CharacterLevel;
+                    ___m_CharacterLevel = num + 1;
+
+                    //int val = bonuses[Math.Min(bonuses.Length - 1, __instance.CharacterLevel)];
+                    ////var f = __instance;
+                    //var setter = typeof(UnitProgressionData).GetProperty("Experience");
+                    //var method = setter.GetSetMethod(true);
+                    //method.Invoke(__instance, new object[] { Math.Max(__instance.Experience, val) });
+                }
+                catch(Exception e)
+                {
+                    Main.Logger.Log(e.ToString());
+                    Main.Logger.Log(e.Message);
+                }
+               
+            }
+           
+            __instance.Classes.Sort();
+            __instance.Features.AddFeature(characterClass.Progression, null).SetSource(characterClass, 1);
+            __instance.Owner.OnGainClassLevel(characterClass);
+            __instance.UpdateAdditionalVisualSettings();
+            var syncWithView = typeof(UnitProgressionData).GetMethod("SyncWithView", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            syncWithView.Invoke(__instance, new object[] { });
+            return false;
+           
+        }
         [HarmonyPatch("MaxCharacterLevel", MethodType.Getter)]
         [HarmonyPriority(Priority.Low)]
         public static void Postfix(ref int __result)
@@ -327,4 +441,7 @@ namespace PFWOTRCLUNLOCKER
 
 
     }
+
+
+
 }
